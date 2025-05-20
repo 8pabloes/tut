@@ -113,6 +113,11 @@ public class Coche {
     public int getStock() {
         return stock;
     }
+    @Override
+    public String toString() {
+        // TODO Auto-generated method stub
+        return super.toString();
+    }
 
     public void setStock(int stock) {
         this.stock = stock;
