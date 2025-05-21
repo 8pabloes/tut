@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
-function Login() {
+function Login({ setUsuarioNombre }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -19,21 +20,48 @@ function Login() {
         throw new Error('Login incorrecto');
       })
       .then(data => {
-        alert('Sesión iniciada');
         localStorage.setItem('usuarioId', data.id);
         localStorage.setItem('usuarioNombre', data.nombre);
-        navigate('/');
+        if (setUsuarioNombre) setUsuarioNombre(data.nombre);
+
+        // ✅ Mostrar toast
+        toast.success('✅ Sesión iniciada correctamente', {
+          autoClose: 2000,
+          hideProgressBar: true
+        });
+
+        // ✅ Redirigir después de 2.5 segundos (más que el toast)
+        setTimeout(() => navigate('/'), 2500);
       })
-      .catch(() => alert('Correo o contraseña incorrectos'));
+      .catch(() => {
+        toast.error('❌ Correo o contraseña incorrectos', {
+          autoClose: 2000,
+          hideProgressBar: true
+        });
+      });
   };
 
   return (
     <div className="container mt-5">
       <h2>Iniciar sesión</h2>
       <form onSubmit={handleLogin}>
-        <input className="form-control mb-3" type="email" placeholder="Correo" value={email} onChange={e => setEmail(e.target.value)} required />
-        <input className="form-control mb-3" type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} required />
-        <button className="btn btn-primary" type="submit">Entrar</button>
+        <input
+          className="form-control mb-3"
+          type="email"
+          placeholder="Correo"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        <input
+          className="form-control mb-3"
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button className="btn btn-primary w-100" type="submit">Entrar</button>
       </form>
     </div>
   );

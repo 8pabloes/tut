@@ -16,13 +16,25 @@ function Home({ carrito, setCarrito }) {
     precioMax: ''
   });
 
+  // Cargar favoritos si hay sesión
+  useEffect(() => {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId) return;
+
+    fetch(`http://localhost:8080/api/favoritos/usuario/${usuarioId}`)
+      .then(res => res.json())
+      .then(data => {
+        setFavoritos(Array.isArray(data) ? data : []);
+      })
+      .catch(err => console.error("Error cargando favoritos", err));
+  }, []);
+
   useEffect(() => {
     cargarCoches();
   }, []);
 
   const cargarCoches = () => {
     const params = new URLSearchParams();
-
     if (filtros.tipo) params.append('tipo', filtros.tipo);
     if (filtros.estado) params.append('estado', filtros.estado);
     if (filtros.precioMin) params.append('precioMin', filtros.precioMin);
@@ -44,13 +56,16 @@ function Home({ carrito, setCarrito }) {
   };
 
   const añadirAFavoritos = (cocheId) => {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId) {
+      toast.warning("Inicia sesión para guardar favoritos");
+      return;
+    }
+
     fetch('http://localhost:8080/favoritos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        usuarioId: localStorage.getItem('usuarioId'),
-        cocheId: cocheId
-      })
+      body: new URLSearchParams({ usuarioId, cocheId })
     })
       .then((res) => {
         if (res.ok) {
@@ -69,7 +84,7 @@ function Home({ carrito, setCarrito }) {
       .then(res => {
         if (res.ok) {
           setFavoritos(favoritos.filter(f => f.id !== favoritoId));
-          toast.info('Eliminado de favoritos 🗑');
+          toast.info('Eliminado de favoritos');
         } else {
           toast.error('No se pudo eliminar');
         }
@@ -89,47 +104,39 @@ function Home({ carrito, setCarrito }) {
 
   const verTodos = () => {
     setFiltros({ tipo: '', estado: '', precioMin: '', precioMax: '' });
-setMostrarSoloFavoritos(false);
-setTimeout(() => cargarCoches(), 0);
+    setMostrarSoloFavoritos(false);
+    setTimeout(() => cargarCoches(), 0);
+  };
 
+  const añadirACesta = (coche) => {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId) {
+      toast.warning("Debes iniciar sesión para añadir a la cesta");
+      return;
+    }
+
+    setCarrito([...carrito, coche]);
+    toast.success("Añadido a cesta");
   };
 
   return (
     <>
       <ToastContainer position="top-center" />
-      <header className="bg-dark text-white py-3 mb-4 shadow-sm">
-       <div className="container d-flex justify-content-between align-items-center">
-  <div className="d-flex align-items-center">
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Racing_flag.svg/1024px-Racing_flag.svg.png"
-      alt="Logo"
-      style={{ height: '40px', marginRight: '10px' }}
-    />
-    <h1 className="m-0" style={{ fontWeight: '700', letterSpacing: '1px' }}>
-      TUT - The Uxes Track 🏁
-    </h1>
-  </div>
-
-  <Link to="/login" className="btn btn-outline-light">
-    <span role="img" aria-label="login">👤</span> Login
-  </Link>
-</div>
-
-      </header>
+      
 
       <div className="container">
         <form className="mb-4" onSubmit={handleBuscar}>
-         <div className="mb-4 d-flex justify-content-end flex-wrap gap-2">
-  <button type="button" className="btn btn-outline-secondary" onClick={mostrarFavoritos}>
-    ❤️ Ver favoritos
-  </button>
-  <button type="button" className="btn btn-outline-primary" onClick={verTodos}>
-    🚗 Ver todos los coches
-  </button>
-  <Link to="/cesta" className="btn btn-outline-dark">
-    🛒 Ver cesta
-  </Link>
-</div>
+          <div className="mb-4 d-flex justify-content-end flex-wrap gap-2">
+            <button type="button" className="btn btn-outline-secondary" onClick={mostrarFavoritos}>
+              ❤️ Ver favoritos
+            </button>
+            <button type="button" className="btn btn-outline-primary" onClick={verTodos}>
+              🚗 Ver todos los coches
+            </button>
+            <Link to="/cesta" className="btn btn-outline-dark">
+              🛒 Ver cesta
+            </Link>
+          </div>
 
           <div className="row">
             <div className="col-md-3">
@@ -184,7 +191,7 @@ setTimeout(() => cargarCoches(), 0);
                           <button className="btn btn-outline-danger w-100 mt-2" onClick={(e) => { e.preventDefault(); añadirAFavoritos(coche.id); }}>
                             ❤️ Añadir a favoritos
                           </button>
-                          <button className="btn btn-light border w-100 mt-2" style={{ fontSize: '1.4rem' }} onClick={(e) => { e.preventDefault(); setCarrito([...carrito, coche]); toast.success('🛒 Añadido a cesta'); }}>
+                          <button className="btn btn-light border w-100 mt-2" onClick={(e) => { e.preventDefault(); añadirACesta(coche); }}>
                             Añadir a cesta
                           </button>
                         </>

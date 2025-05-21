@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function Cesta({ carrito, finalizarCompra }) {
+function Cesta({ carrito }) {
   return (
     <div className="container mt-5">
       <Link to="/" className="btn btn-secondary mb-4">← Volver</Link>
@@ -18,10 +18,7 @@ function Cesta({ carrito, finalizarCompra }) {
               </li>
             ))}
           </ul>
-          <Link to="/pago" className="btn btn-success">
-  Ir a pagar
-</Link>
-
+          <Link to="/pago" className="btn btn-success">Ir a pagar</Link>
         </>
       )}
     </div>
