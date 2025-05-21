@@ -9,12 +9,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/coches")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CocheController {
 
     @Autowired
     private CocheRepository cocheRepository;
 
-    // Devuelve coches filtrados por marca, tipo, estado y precio
     @GetMapping
     public List<Coche> filtrarCoches(
             @RequestParam(required = false) String marca,

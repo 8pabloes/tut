@@ -3,61 +3,74 @@ package tfc.tut.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tfc.tut.entities.Coche;
 import tfc.tut.entities.Pedido;
 import tfc.tut.entities.Usuario;
-import tfc.tut.entities.Coche;
+import tfc.tut.repository.CocheRepository;
 import tfc.tut.repository.PedidoRepository;
 import tfc.tut.repository.UsuarioRepository;
-import tfc.tut.repository.CocheRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/api/pedidos")
+@CrossOrigin(origins = "http://localhost:3000")
 public class PedidoController {
 
     @Autowired
     private PedidoRepository pedidoRepository;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
     private CocheRepository cocheRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    // POST: crear un pedido con varios coches
     @PostMapping
-public ResponseEntity<?> crearPedido(@RequestParam Long usuarioId, @RequestParam Long cocheId) {
-    Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
-    Coche coche = cocheRepository.findById(cocheId).orElseThrow();
+    public ResponseEntity<String> crearPedido(@RequestBody PedidoRequest request) {
+        Pedido pedido = new Pedido();
+        pedido.setFecha(LocalDate.now());
 
-    if (coche.getStock() <= 0) {
-        return ResponseEntity.badRequest().body("No hay stock disponible para este coche.");
+        Usuario usuario = usuarioRepository.findById(request.getUsuarioId()).orElse(null);
+        pedido.setUsuario(usuario);
+
+        List<Coche> coches = cocheRepository.findAllById(request.getCocheIds());
+        pedido.setCoches(coches);
+
+        double total = coches.stream().mapToDouble(Coche::getPrecio).sum();
+        pedido.setTotal(total);
+
+        pedidoRepository.save(pedido);
+        return ResponseEntity.ok("Pedido guardado correctamente");
     }
-
-    Pedido pedido = new Pedido();
-    pedido.setUsuario(usuario);
-    pedido.setCoche(coche);
-    pedido.setFecha(LocalDate.now());
-    pedido.setTotal(coche.getPrecio());
-
-    // Restar stock
-    coche.setStock(coche.getStock() - 1);
-
-    // Si el stock llega a 0, cambiar estado a "vendido"
-    if (coche.getStock() == 0) {
-        coche.setEstado("vendido");
-    }
-
-    cocheRepository.save(coche);
-    pedidoRepository.save(pedido);
-
-    return ResponseEntity.ok(pedido);
+    @GetMapping("/usuario/{usuarioId}")
+public ResponseEntity<List<Pedido>> obtenerPedidosPorUsuario(@PathVariable Long usuarioId) {
+    List<Pedido> pedidos = pedidoRepository.findByUsuarioId(usuarioId);
+    return ResponseEntity.ok(pedidos);
 }
 
 
-    @GetMapping("/usuario/{usuarioId}")
-    public List<Pedido> getPedidosUsuario(@PathVariable Long usuarioId) {
-        return pedidoRepository.findByUsuarioId(usuarioId);
+    // Clase interna para recibir el JSON del carrito
+    public static class PedidoRequest {
+        private Long usuarioId;
+        private List<Long> cocheIds;
+
+        public Long getUsuarioId() {
+            return usuarioId;
+        }
+
+        public void setUsuarioId(Long usuarioId) {
+            this.usuarioId = usuarioId;
+        }
+
+        public List<Long> getCocheIds() {
+            return cocheIds;
+        }
+
+        public void setCocheIds(List<Long> cocheIds) {
+            this.cocheIds = cocheIds;
+        }
     }
 }

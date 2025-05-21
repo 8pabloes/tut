@@ -38,4 +38,10 @@ public class FavoritoController {
     public List<Favorito> getFavoritosByUsuario(@PathVariable Long usuarioId) {
         return favoritoRepository.findByUsuarioId(usuarioId);
     }
+
+    @DeleteMapping("/{id}")
+public void eliminarFavorito(@PathVariable Long id) {
+    favoritoRepository.deleteById(id);
+}
+
 }
