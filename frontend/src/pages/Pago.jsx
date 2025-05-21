@@ -1,31 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PayPalButtons } from '@paypal/react-paypal-js';
 
 function Pago({ carrito, setCarrito }) {
   const navigate = useNavigate();
   const total = carrito.reduce((sum, coche) => sum + coche.precio, 0);
   const usuarioNombre = localStorage.getItem('usuarioNombre');
-
-  const pagar = () => {
-    fetch('http://localhost:8080/api/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        usuarioId: localStorage.getItem('usuarioId'),
-        cocheIds: carrito.map(c => c.id)
-      })
-    })
-      .then(res => {
-        if (res.ok) {
-          alert('✅ Compra realizada correctamente');
-          setCarrito([]);
-          navigate('/');
-        } else {
-          alert('❌ Error al guardar el pedido');
-        }
-      })
-      .catch(() => alert('❌ Error de conexión'));
-  };
 
   return (
     <div className="container mt-5">
@@ -43,14 +23,40 @@ function Pago({ carrito, setCarrito }) {
 
       <p className="fw-bold">Total: {total} €</p>
 
-      <form onSubmit={(e) => { e.preventDefault(); pagar(); }}>
-        <input className="form-control mb-3" placeholder="Nombre en la tarjeta" required />
-        <input className="form-control mb-3" placeholder="Número de tarjeta" required />
-        <input className="form-control mb-3" placeholder="Fecha de expiración" required />
-        <input className="form-control mb-3" placeholder="CVV" required />
-
-        <button type="submit" className="btn btn-success w-100">Pagar ahora</button>
-      </form>
+      <PayPalButtons
+        style={{ layout: 'vertical' }}
+        createOrder={(data, actions) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: total.toString()
+              }
+            }]
+          });
+        }}
+        onApprove={(data, actions) => {
+          return actions.order.capture().then(() => {
+            fetch('http://localhost:8080/api/pedidos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                usuarioId: localStorage.getItem('usuarioId'),
+                cocheIds: carrito.map(c => c.id)
+              })
+            })
+              .then(res => {
+                if (res.ok) {
+                  alert('✅ Pago confirmado y pedido guardado');
+                  setCarrito([]);
+                  navigate('/');
+                } else {
+                  alert('❌ Error al guardar el pedido');
+                }
+              })
+              .catch(() => alert('❌ Error de conexión al guardar'));
+          });
+        }}
+      />
     </div>
   );
 }

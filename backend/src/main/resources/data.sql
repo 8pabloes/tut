@@ -11,13 +11,13 @@ INSERT INTO usuarios (id, nombre, email, password) VALUES
 -- =======================
 -- COCHES
 -- =======================
-INSERT INTO coches (id, marca, modelo, año, precio, tipo, estado, stock, descripcion) VALUES
-(1, 'Subaru', 'Impreza WRX', 2001, 25000, 'rally', 'disponible', 5, 'Tracción total, histórico en WRC.'),
-(2, 'Mitsubishi', 'Lancer Evo VI', 2000, 28000, 'rally', 'disponible', 3, 'Evo clásico, homologado para competición.'),
-(3, 'Ford', 'Escort RS Cosworth', 1994, 32000, 'clásico', 'disponible', 2, 'Coche de grupo A, ideal para rally vintage.'),
-(4, 'Peugeot', '205 T16', 1985, 60000, 'clásico', 'vendido', 0, 'Grupo B original, restaurado completamente.'),
-(5, 'Toyota', 'Celica GT-Four', 1998, 27000, 'rally', 'reservado', 1, 'Campeón del mundial de rally en los 90.'),
-(6, 'Lancia', 'Delta Integrale', 1992, 29000, 'clásico', 'disponible', 1, 'Icono de los rallies de los 90.');
+INSERT INTO coches (marca, modelo, año, precio, tipo, estado, stock, descripcion) VALUES
+('Subaru', 'Impreza WRX', 2001, 25000, 'rally', 'disponible', 5, 'Tracción total, histórico en WRC.'),
+('Mitsubishi', 'Lancer Evo VI', 2000, 28000, 'rally', 'disponible', 3, 'Evo clásico, homologado para competición.'),
+('Ford', 'Escort RS Cosworth', 1994, 32000, 'clásico', 'disponible', 2, 'Coche de grupo A, ideal para rally vintage.'),
+('Peugeot', '205 T16', 1985, 60000, 'clásico', 'vendido', 0, 'Grupo B original, restaurado completamente.'),
+('Toyota', 'Celica GT-Four', 1998, 27000, 'rally', 'reservado', 1, 'Campeón del mundial de rally en los 90.'),
+('Lancia', 'Delta Integrale', 1992, 29000, 'clásico', 'disponible', 1, 'Icono de los rallies de los 90.');
 
 -- =======================
 -- IMÁGENES
