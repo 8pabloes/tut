@@ -1,77 +1,111 @@
-// src/pages/AdminCoches.jsx
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function AdminCoches() {
+  const navigate = useNavigate();
+  const usuarioNombre = localStorage.getItem('usuarioNombre');
+
+  // 🛑 Si no eres Pablo, te echamos antes de hacer nada más
+  useEffect(() => {
+    if (usuarioNombre !== 'Pablo') {
+      navigate('/');
+    }
+  }, [usuarioNombre, navigate]);
+
+  // ✅ Hooks bien colocados
   const [coches, setCoches] = useState([]);
-  const [nuevoCoche, setNuevoCoche] = useState({
-    marca: '', modelo: '', descripcion: '', precio: '', estado: '', tipo: '', año: '', stock: ''
+  const [formData, setFormData] = useState({
+    marca: '',
+    modelo: '',
+    año: '',
+    precio: '',
+    stock: '',
+    descripcion: '',
+    tipo: '',
+    estado: ''
   });
 
-  useEffect(() => {
+  const cargarCoches = () => {
     fetch('http://localhost:8080/coches')
       .then(res => res.json())
       .then(data => setCoches(data));
-  }, []);
-
-  const handleInputChange = e => {
-    setNuevoCoche({ ...nuevoCoche, [e.target.name]: e.target.value });
   };
 
-  const crearCoche = () => {
+  useEffect(() => {
+    cargarCoches();
+  }, []);
+
+  const handleChange = e => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
     fetch('http://localhost:8080/coches', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevoCoche)
+      body: JSON.stringify(formData)
     })
-      .then(res => res.json())
-      .then(coche => {
-        toast.success('Coche creado ✅');
-        setCoches([...coches, coche]);
-        setNuevoCoche({ marca: '', modelo: '', descripcion: '', precio: '', estado: '', tipo: '', año: '', stock: '' });
+      .then(res => {
+        if (res.ok) {
+          alert('Coche creado correctamente');
+          setFormData({
+            marca: '',
+            modelo: '',
+            año: '',
+            precio: '',
+            stock: '',
+            descripcion: '',
+            tipo: '',
+            estado: ''
+          });
+          cargarCoches();
+        }
       });
   };
 
   const borrarCoche = id => {
-    fetch(`http://localhost:8080/coches/${id}`, { method: 'DELETE' })
-      .then(() => {
-        toast.info('Coche eliminado 🗑');
-        setCoches(coches.filter(c => c.id !== id));
-      });
+    if (!window.confirm('¿Seguro que quieres borrar este coche?')) return;
+
+    fetch(`http://localhost:8080/coches/${id}`, {
+      method: 'DELETE'
+    })
+      .then(() => cargarCoches());
   };
 
   return (
-    <div className="container mt-4">
-      <h2>🔧 Administración de Coches</h2>
+    <div className="container mt-5">
+      <h2>🔧 Panel de Administración</h2>
+      <form onSubmit={handleSubmit} className="row g-3 my-4">
+        <input name="marca" placeholder="Marca" className="form-control" value={formData.marca} onChange={handleChange} required />
+        <input name="modelo" placeholder="Modelo" className="form-control" value={formData.modelo} onChange={handleChange} required />
+        <input name="año" placeholder="Año" type="number" className="form-control" value={formData.año} onChange={handleChange} required />
+        <input name="precio" placeholder="Precio" type="number" className="form-control" value={formData.precio} onChange={handleChange} required />
+        <input name="stock" placeholder="Stock" type="number" className="form-control" value={formData.stock} onChange={handleChange} required />
+        <input name="descripcion" placeholder="Descripción" className="form-control" value={formData.descripcion} onChange={handleChange} required />
+        <select name="tipo" className="form-control" value={formData.tipo} onChange={handleChange} required>
+          <option value="">Selecciona tipo</option>
+          <option value="rally">Rally</option>
+          <option value="clásico">Clásico</option>
+        </select>
+        <select name="estado" className="form-control" value={formData.estado} onChange={handleChange} required>
+          <option value="">Selecciona estado</option>
+          <option value="disponible">Disponible</option>
+          <option value="reservado">Reservado</option>
+          <option value="vendido">Vendido</option>
+        </select>
+        <button className="btn btn-success mt-3" type="submit">Guardar coche</button>
+      </form>
 
-      <div className="row mt-4">
-        <div className="col-md-6">
-          <h4>➕ Nuevo coche</h4>
-          {['marca', 'modelo', 'descripcion', 'precio', 'estado', 'tipo', 'año', 'stock'].map(campo => (
-            <input
-              key={campo}
-              className="form-control mb-2"
-              placeholder={campo}
-              name={campo}
-              value={nuevoCoche[campo]}
-              onChange={handleInputChange}
-            />
-          ))}
-          <button onClick={crearCoche} className="btn btn-success w-100">Crear coche</button>
-        </div>
-
-        <div className="col-md-6">
-          <h4>📋 Lista actual</h4>
-          <ul className="list-group">
-            {coches.map(c => (
-              <li key={c.id} className="list-group-item d-flex justify-content-between align-items-center">
-                {c.marca} {c.modelo}
-                <button className="btn btn-sm btn-danger" onClick={() => borrarCoche(c.id)}>Borrar</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <h4>🧾 Lista de coches</h4>
+      <ul className="list-group">
+        {coches.map(c => (
+          <li className="list-group-item d-flex justify-content-between" key={c.id}>
+            {c.marca} {c.modelo} - {c.precio} € ({c.estado}) [{c.stock} en stock]
+            <button className="btn btn-danger btn-sm" onClick={() => borrarCoche(c.id)}>Eliminar</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
