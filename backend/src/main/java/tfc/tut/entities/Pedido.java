@@ -20,13 +20,13 @@ public class Pedido {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    @ManyToMany
-    @JoinTable(
-        name = "pedido_coche",
-        joinColumns = @JoinColumn(name = "pedido_id"),
-        inverseJoinColumns = @JoinColumn(name = "coche_id")
-    )
-    private List<Coche> coches;
+@ManyToMany
+@JoinTable(
+    name = "pedido_coches",
+    joinColumns = @JoinColumn(name = "pedido_id"),
+    inverseJoinColumns = @JoinColumn(name = "coche_id")
+)
+private List<Coche> coches;
 
     public Pedido() {}
 
@@ -54,7 +54,6 @@ public class Pedido {
 
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public List<Coche> getCoches() { return coches; }
+public List<Coche> getCoches() { return coches; }
+public void setCoches(List<Coche> coches) { this.coches = coches; }}
 
-    public void setCoches(List<Coche> coches) { this.coches = coches; }
-}

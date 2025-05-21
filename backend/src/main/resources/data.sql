@@ -1,11 +1,12 @@
 -- =======================
 -- USUARIOS
 -- =======================
-INSERT INTO usuarios (id, nombre, email, password, rol) VALUES
-(1, 'Pablo', 'pablo@email.com', '1234', 'USER'),
-(2, 'María', 'maria@email.com', '5678', 'USER'),
-(3, 'Carlos', 'carlos@email.com', 'abcd', 'USER'),
-(4, 'Laura', 'laura@email.com', 'laura123', 'ADMIN');
+INSERT INTO usuarios (id, nombre, email, password) VALUES
+(1, 'Pablo', 'pablo@email.com', '1234'),
+(2, 'María', 'maria@email.com', '5678'),
+(3, 'Carlos', 'carlos@email.com', 'abcd'),
+(4, 'Laura', 'laura@email.com', 'laura123');
+
 
 -- =======================
 -- COCHES
